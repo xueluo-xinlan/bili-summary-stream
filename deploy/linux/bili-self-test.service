@@ -1,0 +1,16 @@
+[Unit]
+Description=BiliSummaryStream 每日自检 (self test)
+Documentation=file:/root/bili-summary-stream/tools/self_test.py
+After=network-online.target bili-summary.service
+Wants=network-online.target
+# 排在金丝雀之后，避免两者抢同一个 LLM 通道
+After=bili-gate-canary.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/root/bili-summary-stream
+Environment=HOME=/root
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/root/bili-summary-stream/.venv/bin/python /root/bili-summary-stream/tools/self_test_daily.py
+# 自检失败（退出码 1）时 systemd 记为 failed，`systemctl --failed` 一眼可见
+TimeoutStartSec=900

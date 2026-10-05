@@ -1,0 +1,12 @@
+[Unit]
+Description=每日运行 BiliSummaryStream 自检
+Documentation=file:/root/bili-summary-stream/tools/self_test.py
+
+[Timer]
+# 每天 10:20（本机时区），排在金丝雀 10:00 之后
+OnCalendar=*-*-* 10:20:00
+Persistent=true
+Unit=bili-self-test.service
+
+[Install]
+WantedBy=timers.target

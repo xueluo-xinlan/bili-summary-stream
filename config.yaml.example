@@ -1,0 +1,86 @@
+# ==========================================================
+# Bilibili 视频深度总结与多账号个性化推送流 (云端主控配置)
+# ==========================================================
+
+bilibili:
+  sessdata: "SESSDATA 值（浏览器 F12 里复制）"
+  bili_jct: "bili_jct 值（同上）"
+  sender_uid: "发信小号 UID（数字，不带引号也行）"
+
+notification:
+  receiver_uids:
+  - 1000001
+  - 1000002
+  max_chunk_size: 700
+  send_interval: 2.0
+
+profiles:
+  '1000001':
+    name: 示例账号A
+    keywords:
+      - 科技数码
+      - AI
+      - 历史
+      - 游戏
+    up_mids: []
+    requirements: 深入剖析算法设计、系统架构图以及核心代码实现
+  '1000002':
+    name: 示例账号B
+    keywords:
+      - 科技数码
+      - AI
+      - 历史
+      - 游戏
+    up_mids: []
+    requirements: 客观优缺点对比、避坑指南、真实使用体验与最终购买建议
+
+interactive_listener:
+  enabled: true
+  poll_interval_seconds: 6
+  listen_at_comments: true
+
+# 云边协同混合算力路由
+hybrid:
+  laptop_worker_url: http://203.0.113.20:18088
+  probe_timeout: 0.8  # 0.8s 极速心跳探测，开机用 5060，关机秒级无缝降级
+
+llm:
+  base_url: http://127.0.0.1:8317/v1
+  api_key: "你的 LLM API key（本地 CLIProxyAPI / 上游服务）"
+  model: gemini-3.8-flash-high
+  temperature: 0.3
+
+# 云端多模态内容提取：音频转写 + 无人声视频的视觉描述
+# 目的：PC 关机时也能拿到**真实内容**，而不是用标题简介编造空壳摘要
+cloud_mm:
+  enabled: true
+  # ⚠️ B站字幕通道：实测**取回的正文里约 75% 是其它视频的字幕**
+  #    （同一 bvid+cid 连查多次，结果各不相同）。唯一拦得住它的是相关性闸门，
+  #    收益极低而风险不低：L1（本机 GPU 转写）在线时根本走不到这里；
+  #    笔记本离线时直接走云端 ASR / 视觉，内容必然属于该视频。
+  #    故**显式关闭**——降级链变成「要么真内容，要么老实排队」。
+  #    如需临时开启，改为 true 并重启 bili-summary.service。
+  subtitle_channel: false
+  model: gemini-3.8-flash-high   # 需支持音频/图像输入；留空则复用 llm.model
+  vision_frames: 6               # 无人声视频抽帧数
+  audio_bitrate: 32k             # 音频压缩码率，越小上传越快
+  timeout: 300
+
+# 取不到真实内容时：true = 发一条"待补推"的诚实通知；false = 完全静默排队
+pending_notice: true
+
+daemon:
+  poll_interval_minutes: 30
+
+filter:
+  max_push_per_keyword: 1   # 每个关键词每次巡检最多只精选推送 1 条最优质的视频 (防止刷屏)
+  max_days_old: 7           # 【时效性检测】：只推送最近 7 天内最新发布的视频，过滤陈年旧视频
+  min_relevance_score: 0.75 # 【极高关联度门槛】：0.0~1.0，低于 0.75 坚决不推，必须强相关主体命中
+  min_play: 500              # 常规视频最低播放门槛
+  min_duration: 15           # 放宽至 15 秒以上，允许高质量短视频入选
+  short_video_play_threshold: 1500  # 【短视频高质量保障】：<60s 的短视频要求播放量 >=1500，淘汰低质碎片切片
+  max_duration: 2400         # 过滤 >40min 的冗长培训班录播
+
+paths:
+  history_db: data/history.db
+  summary_dir: summaries

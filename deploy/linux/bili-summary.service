@@ -1,0 +1,16 @@
+[Unit]
+Description=BiliSummaryStream Cloud Master Service (7x24h Bilibili Summary Stream)
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/bili-summary-stream
+ExecStart=/root/bili-summary-stream/.venv/bin/python -u main.py watch
+Restart=always
+RestartSec=5
+StandardOutput=append:/root/bili-summary-stream/daemon.log
+StandardError=append:/root/bili-summary-stream/daemon.log
+
+[Install]
+WantedBy=multi-user.target

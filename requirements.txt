@@ -1,0 +1,11 @@
+# 云端主控 + 边缘节点共用依赖
+requests>=2.31.0
+PyYAML>=6.0
+openai>=1.30.0
+jieba>=0.42.1
+
+# 扫码登录（login.py）
+qrcode[pil]>=7.4.2
+
+# ── 边缘 GPU 节点专用（仅 Windows PC 侧需要，云端可不装）──
+# faster-whisper>=1.0.0
