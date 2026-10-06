@@ -1,6 +1,9 @@
 $ErrorActionPreference = 'SilentlyContinue'
 $proj = 'C:\Projects\bili-summary-stream'
 
+# 刻意用「进程名 + 命令行」双条件筛选：别图省事改成 taskkill /F /IM pythonw.exe
+# 或 Stop-Process -Name pythonw —— 本机常有其它 pythonw 后台任务在跑（抓取兼容层 :8191、
+# SearXNG 等），盲杀会连它们一起结束。只杀命令行里带本项目 main.py watch 的进程。
 function Get-Watch {
   Get-CimInstance Win32_Process | Where-Object { $_ -and $_.Name -match '^pythonw?\.exe$' -and $_.CommandLine -like '*main.py watch*' }
 }
