@@ -92,6 +92,9 @@ hybrid:
 
 边缘机需允许云端访问 `18088` 端口（防火墙放行 / 组网工具）。
 
+> `deploy/windows/` 下的 `.ps1` 默认假设项目位于 `C:\Projects\bili-summary-stream`（脚本内 `$proj` 变量）；
+> 装到别的目录请改这几处，或对支持参数的脚本用 `-proj <你的路径>` 覆盖（如 `watch_status.ps1 -proj D:\bili`）。
+
 ## 三、日常运维
 
 | 目的 | 命令 |
